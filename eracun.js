@@ -221,8 +221,18 @@ streznik.post('/prijava', function(zahteva, odgovor) {
       napaka2 = true;
     }
     //TODO dodaj sporocilo za vspesno ali neuspesno prijavo...
-  
-    odgovor.end();
+    vrniStranke(function(error1, stranke) {
+      vrniRacune(function(error2, racuni) {
+        if(error1 || error2) {
+            odgovor.render('prijava', {sporocilo: "Prišlo je do napake pri registraciji nove stranke. Prosim preverite vnešene podatke in poskusite znova.", seznamStrank: stranke, seznamRacunov: racuni});  
+        } else {
+            odgovor.render('prijava', {sporocilo: "Stranka je bila uspešno registrirana.", seznamStrank: stranke, seznamRacunov: racuni});  
+        }
+        
+        
+      }) 
+    });
+    //odgovor.end()
   });
 })
 
