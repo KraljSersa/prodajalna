@@ -163,12 +163,19 @@ streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
   form.parse(zahteva, function(napaka1, polja, datoteke){
     strankaIzRacuna(polja.seznamRacunov, function(pStranke){
       pesmiIzRacuna(polja.seznamRacunov, function(pesmi){
-          odgovor.setHeader('content-type', 'text/xml');
-          odgovor.render('eslog', {
-          vizualiziraj: true,
-          postavkeRacuna: pesmi,
-          stranka: pStranke
-        });
+          if (!pesmi || !pStranke) {
+            odgovor.sendStatus(500);
+          } else if (pesmi.length == 0) {
+            odgovor.send("<p>V košarici nimate nobene pesmi, \
+              zato računa ni mogoče pripraviti!</p>");
+          } else {
+            odgovor.setHeader('content-type', 'text/xml');
+            odgovor.render('eslog', {
+              vizualiziraj: true,
+              postavkeRacuna: pesmi,
+              stranka: pStranke[0]
+          })  
+        }
       });
     });
   });
