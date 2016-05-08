@@ -47,7 +47,7 @@ function davcnaStopnja(izvajalec, zanr) {
 
 // Prikaz seznama pesmi na strani
 streznik.get('/', function(zahteva, odgovor) {
-  if (!zahteva.session.odgovor) { 
+  if (zahteva.session.odgovor) { 
     
     pb.all("SELECT Track.TrackId AS id, Track.Name AS pesem, \
           Artist.Name AS izvajalec, Track.UnitPrice * " +
@@ -240,7 +240,7 @@ streznik.post('/stranka', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
   
   form.parse(zahteva, function (napaka1, polja, datoteke) {
-    zahteva.session.stranka = parseInt(polja.seznamStrank);
+    zahteva.session.stranka = polja.seznamStrank;
     odgovor.redirect('/')
   });
 })
