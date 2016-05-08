@@ -175,17 +175,22 @@ streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
   
   form.parse(zahteva, function(napaka1, polja, datoteke){
-    strankaIzSQL(polja.seznamRacunov, function(pStranke){
-      
-          if (!pStranke) {
+    strankaIzRacuna(polja.seznamRacunov, function(pStranke){
+      pesmiIzRacuna(polja.seznamRacunov, function(pesmi){
+          if (!pesmi || !pStranke) {
             odgovor.sendStatus(500);
+          } else if (pesmi.length == 0) {
+            odgovor.send("<p>V košarici nimate nobene pesmi, \
+              zato računa ni mogoče pripraviti!</p>");
           } else {
             odgovor.setHeader('content-type', 'text/xml');
             odgovor.render('eslog', {
               vizualiziraj: true,
-              stranka: pStranke
+              postavkeRacuna: pesmi,
+              stranka: pStranke[0]
           })  
         }
+      });
     });
   });
 });
@@ -199,14 +204,20 @@ streznik.get('/izpisiRacun/:oblika', function(zahteva, odgovor) {
       odgovor.send("<p>V košarici nimate nobene pesmi, \
         zato računa ni mogoče pripraviti!</p>");
     } else {
-      odgovor.setHeader('content-type', 'text/xml');
-      odgovor.render('eslog', {
-        vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
-        postavkeRacuna: pesmi
-      })  
+      var form = new formidable.IncomingForm();
+      form.parse(zahteva, function(napaka1, polja, datoteke){
+        strankaIzSQL(zahteva.session.stranka, function(stranka){
+          odgovor.setHeader('content-type', 'text/xml');
+          odgovor.render('eslog', {
+            vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
+            postavkeRacuna: pesmi,
+            stranka: stranka[0]
+          });
+        });
+      });
     }
-  })
-})
+  });
+});
 
 // Privzeto izpiši račun v HTML obliki
 streznik.get('/izpisiRacun', function(zahteva, odgovor) {
@@ -289,10 +300,12 @@ streznik.post('/stranka', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
   
   form.parse(zahteva, function (napaka1, polja, datoteke) {
-    zahteva.session.stranka = parseInt(polja.seznamStrank);
-    odgovor.redirect('/')
+      zahteva.session.stranka = parseInt(polja.seznamStrank);
+      odgovor.redirect('/');
+
   });
-})
+});
+
 
 // Odjava stranke
 streznik.post('/odjava', function(zahteva, odgovor) {
